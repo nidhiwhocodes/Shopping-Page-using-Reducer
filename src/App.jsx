@@ -1,5 +1,8 @@
+
 import { useDispatch, useSelector } from "react-redux";
 import { toggleCart } from "./redux/cartReducer";
+import Products from "./components/Products";
+import Cart from "./components/Cart";
 
 function App() {
   const dispatch = useDispatch();
@@ -8,29 +11,36 @@ function App() {
     (state) => state.cart.isVisible
   );
 
+  const cartItems = useSelector(
+    (state) => state.cart.items
+  );
+
+  const cartCount = cartItems.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
+
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">My Shopping App</h1>
+    <main className="min-h-screen bg-gray-100 p-6 sm:p-10">
+      <header className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold sm:text-3xl">
+          My Shopping App
+        </h1>
 
         <button
           onClick={() => dispatch(toggleCart())}
-          className="rounded-lg bg-blue-600 px-5 py-3 text-white hover:bg-blue-700"
+          className="rounded-lg bg-blue-600 px-4 py-3 text-white hover:bg-blue-700"
         >
-          {isCartVisible ? "Hide Cart" : "My Cart"}
+          🛒 My Cart ({cartCount})
         </button>
-      </div>
+      </header>
 
-      {isCartVisible && (
-        <div className="mt-8 rounded-lg bg-white p-6 shadow">
-          <h2 className="text-2xl font-semibold">My Cart</h2>
-          <p className="mt-2 text-gray-600">
-            Your cart is visible!
-          </p>
-        </div>
-      )}
-    </div>
+      {isCartVisible && <Cart />}
+
+      <Products />
+    </main>
   );
 }
 
 export default App;
+
