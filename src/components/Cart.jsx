@@ -1,10 +1,14 @@
 
+import { useEffect,useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import {
   increaseQuantity,
   decreaseQuantity,
   removeFromCart,
 } from "../redux/cartReducer";
+
+import { uiActions } from "../redux/uiSlice";
 
 function Cart() {
   const dispatch = useDispatch();
@@ -14,14 +18,73 @@ function Cart() {
   );
 
   const totalAmount = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
+    (total, item) =>
+      total + item.price * item.quantity,
     0
   );
+
+  // Send updated cart data to the backend
+  const sendCartData = useCallback(async (cartData) => {
+    dispatch(
+      uiActions.showNotification({
+        status: "pending",
+        title: "Sending...",
+        message: "Sending cart data!",
+      })
+    );
+
+    try {
+      const response = await fetch(
+        "YOUR_EXISTING_API_URL",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(cartData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Could not save cart data.");
+      }
+
+      dispatch(
+        uiActions.showNotification({
+          status: "success",
+          title: "Success!",
+          message: "Cart data saved successfully!",
+        })
+      );
+    } catch (error) {
+      dispatch(
+        uiActions.showNotification({
+          status: "error",
+          title: "Error!",
+          message:
+            error.message || "Something went wrong!",
+        })
+      );
+    }
+  }, [dispatch]);
+
+  // Send cart data whenever cart items change
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      sendCartData({
+        items: cartItems,
+        totalAmount: totalAmount,
+      });
+    }
+  }, [cartItems, totalAmount, sendCartData]);
 
   if (cartItems.length === 0) {
     return (
       <div className="mt-8 rounded-xl bg-white p-6 shadow">
-        <h2 className="text-2xl font-bold">My Cart</h2>
+        <h2 className="text-2xl font-bold">
+          My Cart
+        </h2>
+
         <p className="mt-4 text-gray-500">
           Your cart is empty.
         </p>
@@ -51,7 +114,8 @@ function Cart() {
               </p>
 
               <p className="font-medium">
-                Subtotal: ₹{item.price * item.quantity}
+                Subtotal: ₹
+                {item.price * item.quantity}
               </p>
             </div>
 
@@ -94,11 +158,10 @@ function Cart() {
       </div>
 
       <h3 className="mt-6 text-xl font-bold">
-        Total: ₹{totalAmount}
+        Total: ₹{totalAmount.toFixed(2)}
       </h3>
     </section>
   );
 }
 
 export default Cart;
-

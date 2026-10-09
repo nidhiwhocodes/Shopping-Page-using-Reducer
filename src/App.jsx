@@ -3,9 +3,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { toggleCart } from "./redux/cartReducer";
 import Products from "./components/Products";
 import Cart from "./components/Cart";
+import Notification from "./components/UI/Notification";
 
 function App() {
   const dispatch = useDispatch();
+   const notification = useSelector(
+    (state) => state.ui.notification
+  );
 
   const isCartVisible = useSelector(
     (state) => state.cart.isVisible
@@ -36,7 +40,13 @@ function App() {
       </header>
 
       {isCartVisible && <Cart />}
-
+      {notification && (
+        <Notification
+          status={notification.status}
+          title={notification.title}
+          message={notification.message}
+        />
+      )}
       <Products />
     </main>
   );
